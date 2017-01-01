@@ -27,12 +27,12 @@ import java.util.zip.CheckedInputStream;
 import java.util.zip.CRC32;
 
 public class JSFVWriter {
-	private static CRC32 crc = new CRC32();
+	private static final CRC32 crc = new CRC32();
 
 	private static int success = 0;
 	private static int failed = 0;
 
-	static void calculateCRC(Path file, Path sfvParent, List<String> lines) {
+	private static void calculateCRC(Path file, Path sfvParent, List<String> lines) {
 		if (Files.exists(file, NOFOLLOW_LINKS)) {
 			StringBuilder builder = new StringBuilder();
 			crc.reset();
@@ -128,9 +128,9 @@ public class JSFVWriter {
 		List<String> lines = new ArrayList<>();
 
 		if (description.length() > 0) {
-			lines.add("; SFV File for " + description);
+			lines.add(String.format("; SFV File for %s", description));
 		}
-		lines.add("; Created on " + FileTime.fromMillis(currentTimeMillis()));
+		lines.add(String.format("; Created on ", FileTime.fromMillis(currentTimeMillis())));
 		lines.add("; File encoding is UTF-8");
 		lines.add("");
 
@@ -178,6 +178,7 @@ public class JSFVWriter {
 		}
 		Collections.sort(list);
 		final Path[] source = list.toArray(new Path[0]);
+		boolean lastWasFile = false;
 
 		// Loop through the files and directories and add them to the file
 		for (int i = 0; i < source.length; i++) {
@@ -185,22 +186,38 @@ public class JSFVWriter {
 			boolean isDir = Files.isDirectory(src);
 
 			if (isDir) {
+				if (lastWasFile) {
+					out.println();
+					lastWasFile = false;
+				}
+
 				try {
 					EnumSet<FileVisitOption> opts = EnumSet.noneOf(FileVisitOption.class);
 					Files.walkFileTree(src, opts, Integer.MAX_VALUE, new FileVisitor<Path>() {
+						boolean lastWasFile = false;
+
 						@Override
 						public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+							if (lastWasFile) {
+								out.println();
+								lastWasFile = false;
+							}
+
+							out.printf("Traversing folder: %s%n%n", dir);
 							return CONTINUE;
 						}
 
 						@Override
 						public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 							calculateCRC(file, sfvParent, lines);
+							lastWasFile = true;
 							return CONTINUE;
 						}
 
 						@Override
 						public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+							out.println();
+							lastWasFile = false;
 							return CONTINUE;
 						}
 
@@ -217,10 +234,10 @@ public class JSFVWriter {
 				}
 			} else {
 				calculateCRC(src, sfvParent, lines);
+				lastWasFile = true;
 			}
 		}
 
-		out.println();
 		out.printf("%d file(s) processed successfully%n%d file(s) failed to be processed%n", success, failed);
 
 		try {
