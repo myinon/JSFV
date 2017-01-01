@@ -33,3 +33,5 @@ Usage: java JSFVReader [-l] sfv [...]
         sfv An SFV file whose contents should be verified.
 ```
 All relative file path names listed in the SFV file will be resolved against the SFV file’s parent directory. You can also verify multiple SFV files by specifying each one as a separate command line argument.
+# Requirements
+JSFV requires a Java Runtime Environment (JRE) of 1.7 or higher. In order to use the released Jar file, type the following into the console: `java -cp path/to/JSFV.jar` followed by either `JSFVReader` or `JSFVWriter` and then the appropriate arguments.
