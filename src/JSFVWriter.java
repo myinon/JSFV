@@ -122,8 +122,8 @@ public class JSFVWriter {
 			}
 		}
 
-		Path sfvParent = sfv.getParent();
-		List<String> lines = new ArrayList<>();
+		final Path sfvParent = sfv.getParent();
+		final List<String> lines = new ArrayList<>();
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'XXX");
 
 		if (description.length() > 0) {
