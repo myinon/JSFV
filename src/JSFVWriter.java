@@ -1,5 +1,3 @@
-import static java.lang.System.console;
-import static java.lang.System.currentTimeMillis;
 import static java.lang.System.err;
 import static java.lang.System.exit;
 import static java.lang.System.out;
@@ -18,7 +16,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -108,7 +106,7 @@ public class JSFVWriter {
 		}
 
 		if (Files.exists(sfv, NOFOLLOW_LINKS)) {
-			String answer = console().readLine("%s already exists. Overwrite the existing file (yes/no)? ", sfv);
+			String answer = System.console().readLine("%s already exists. Overwrite the existing file (yes/no)? ", sfv);
 			if (!(answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("yes"))) {
 				return;
 			}
@@ -126,11 +124,12 @@ public class JSFVWriter {
 
 		Path sfvParent = sfv.getParent();
 		List<String> lines = new ArrayList<>();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'XXX");
 
 		if (description.length() > 0) {
 			lines.add(String.format("; SFV File for %s", description));
 		}
-		lines.add(String.format("; Created on ", FileTime.fromMillis(currentTimeMillis())));
+		lines.add(String.format("; Created on %s", df.format(System.currentTimeMillis())));
 		lines.add("; File encoding is UTF-8");
 		lines.add("");
 
